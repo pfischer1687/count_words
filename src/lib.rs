@@ -1,6 +1,30 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, cmp::Ordering};
 
-pub fn count_words(s: &str, word_counter: &mut HashMap<String, i32>) {
+pub fn get_most_used_words(n: usize, s: &str, result: &mut Vec<(String, i32)>) {
+    let mut sorted_words: Vec<(String, i32)> = Vec::new();
+    let mut word_counter: HashMap<String, i32> = HashMap::new();
+    count_words(&s, &mut word_counter);
+
+    for (key, val) in word_counter.drain() {
+        sorted_words.push((key, val));
+    }
+
+    sorted_words.sort_unstable_by(compare_words);
+
+    for (key, val) in sorted_words.drain(..n) {
+        result.push((key, val));
+    }
+}
+
+fn compare_words(a: &(String, i32), b: &(String, i32)) -> Ordering {
+    if a.1 == b.1 {
+        return a.0.cmp(&b.0); // return word keys in alphabetical order
+    }
+
+    b.1.cmp(&a.1) // return count values from greatest to least
+}
+
+fn count_words(s: &str, word_counter: &mut HashMap<String, i32>) {
     let s_split: std::str::SplitWhitespace<'_> = s.split_whitespace();
     for word in s_split {
         let filtered_word: String = filter_letters(word);
@@ -27,7 +51,7 @@ mod tests {
     #[test]
     fn test_filter_letters() {
         let hello: String = String::from("123[]<>()Hello,! ");
-        let result:String  = filter_letters(&hello);
+        let result: String = filter_letters(&hello);
         assert_eq!(result, "hello");
     }
 
@@ -38,5 +62,15 @@ mod tests {
         count_words(&hello, &mut word_counter);
         let check_hash: HashMap<String, i32> = HashMap::from([("world".to_string(), 2), ("says".to_string(), 1), ("hello".to_string(), 2)]);
         assert_eq!(word_counter, check_hash);
+    }
+
+    #[test]
+    fn test_get_most_used_words() {
+        let n: usize = 2;
+        let hello: String = String::from("Hello, world!\nWorld says hello.");
+        let mut result: Vec<(String, i32)> = Vec::new();
+        get_most_used_words(n, &hello, &mut result);
+        let check_result: Vec<(String, i32)> = vec![("hello".to_string(), 2), ("world".to_string(), 2)];
+        assert_eq!(result, check_result);
     }
 }
