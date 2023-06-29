@@ -1,11 +1,12 @@
 use std::{collections::HashMap, cmp::Ordering};
 
-pub fn get_most_common_words(n: usize, s: &str, result: &mut Vec<(String, i32)>) {
+pub fn get_most_common_words(mut n: usize, s: &str, result: &mut Vec<(String, i32)>) {
     let mut sorted_words: Vec<(String, i32)> = Vec::new();
     let mut word_counter: HashMap<String, i32> = HashMap::new();
     count_words(&s, &mut word_counter);
 
     if word_counter.len() < 1 { return; }
+    if word_counter.len() < n { n = word_counter.len(); }
 
     for (key, val) in word_counter.drain() {
         sorted_words.push((key, val));
@@ -92,6 +93,16 @@ mod tests {
         let mut result: Vec<(String, i32)> = Vec::new();
         get_most_common_words(n, &empty, &mut result);
         let check_result: Vec<(String, i32)> = Vec::new();
+        assert_eq!(result, check_result);
+    }
+
+    #[test]
+    fn test_get_most_used_words_less_unique_words_than_n() {
+        let n: usize = 10;
+        let empty: String = String::from("Hello, hello world!");
+        let mut result: Vec<(String, i32)> = Vec::new();
+        get_most_common_words(n, &empty, &mut result);
+        let check_result: Vec<(String, i32)> = vec![("hello".to_string(), 2), ("world".to_string(), 1)];
         assert_eq!(result, check_result);
     }
 
