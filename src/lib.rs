@@ -1,6 +1,6 @@
 use std::{collections::HashMap, cmp::Ordering};
 
-pub fn get_most_used_words(n: usize, s: &str, result: &mut Vec<(String, i32)>) {
+pub fn get_most_common_words(n: usize, s: &str, result: &mut Vec<(String, i32)>) {
     let mut sorted_words: Vec<(String, i32)> = Vec::new();
     let mut word_counter: HashMap<String, i32> = HashMap::new();
     count_words(&s, &mut word_counter);
@@ -47,6 +47,7 @@ fn filter_letters(word: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::{fs::File, io::BufReader, io::prelude::*};
 
     #[test]
     fn test_filter_letters() {
@@ -69,8 +70,31 @@ mod tests {
         let n: usize = 2;
         let hello: String = String::from("Hello, world!\nWorld says hello.");
         let mut result: Vec<(String, i32)> = Vec::new();
-        get_most_used_words(n, &hello, &mut result);
+        get_most_common_words(n, &hello, &mut result);
         let check_result: Vec<(String, i32)> = vec![("hello".to_string(), 2), ("world".to_string(), 2)];
         assert_eq!(result, check_result);
+    }
+
+    #[test]
+    fn test_get_most_common_words_on_test_txt() {
+        let file: Result<File, std::io::Error> = File::open("txt/test.txt");
+        let mut contents: String = String::new();
+        let n: usize = 2;
+        let mut result: Vec<(String, i32)> = Vec::new();
+
+        let mut buf_reader: BufReader<File> = match file {
+            Ok(file) => BufReader::new(file),
+            Err(e) => { panic!("Error: {e}"); },
+        };
+
+        let did_contents_buffer: Result<usize, std::io::Error> = buf_reader.read_to_string(&mut contents);
+
+        match did_contents_buffer {
+            Ok(_) => { get_most_common_words(n, &contents, &mut result) },
+            Err(e) => { panic!("Error: {e}"); },
+        };
+
+        let check_contents: Vec<(String, i32)> = vec![("the".to_string(), 13), ("of".to_string(), 9)];
+        assert_eq!(result, check_contents);
     }
 }
