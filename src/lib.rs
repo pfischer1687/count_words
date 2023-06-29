@@ -5,6 +5,8 @@ pub fn get_most_common_words(n: usize, s: &str, result: &mut Vec<(String, i32)>)
     let mut word_counter: HashMap<String, i32> = HashMap::new();
     count_words(&s, &mut word_counter);
 
+    if word_counter.len() < 1 { return; }
+
     for (key, val) in word_counter.drain() {
         sorted_words.push((key, val));
     }
@@ -26,8 +28,10 @@ fn compare_words(a: &(String, i32), b: &(String, i32)) -> Ordering {
 
 fn count_words(s: &str, word_counter: &mut HashMap<String, i32>) {
     let s_split: std::str::SplitWhitespace<'_> = s.split_whitespace();
+
     for word in s_split {
         let filtered_word: String = filter_letters(word);
+        if filtered_word.len() < 1 { continue; }
         word_counter.entry(filtered_word).and_modify(|number: &mut i32| *number += 1).or_insert(1);
     }
 }
@@ -35,10 +39,7 @@ fn count_words(s: &str, word_counter: &mut HashMap<String, i32>) {
 fn filter_letters(word: &str) -> String {
     let mut result: String = String::new();
     for c in word.chars() {
-        if !c.is_ascii_alphabetic() {
-            continue;
-        }
-
+        if !c.is_ascii_alphabetic() { continue; }
         result.push(c.to_ascii_lowercase());
     }
     result
@@ -66,12 +67,31 @@ mod tests {
     }
 
     #[test]
+    fn test_count_words_empty() {
+        let empty: String = String::from("");
+        let mut word_counter: HashMap<String, i32> = HashMap::new();
+        count_words(&empty, &mut word_counter);
+        let check_hash: HashMap<String, i32> = HashMap::new();
+        assert_eq!(word_counter, check_hash);
+    }
+
+    #[test]
     fn test_get_most_used_words() {
         let n: usize = 2;
         let hello: String = String::from("Hello, world!\nWorld says hello.");
         let mut result: Vec<(String, i32)> = Vec::new();
         get_most_common_words(n, &hello, &mut result);
         let check_result: Vec<(String, i32)> = vec![("hello".to_string(), 2), ("world".to_string(), 2)];
+        assert_eq!(result, check_result);
+    }
+
+    #[test]
+    fn test_get_most_used_words_empty() {
+        let n: usize = 2;
+        let empty: String = String::from("");
+        let mut result: Vec<(String, i32)> = Vec::new();
+        get_most_common_words(n, &empty, &mut result);
+        let check_result: Vec<(String, i32)> = Vec::new();
         assert_eq!(result, check_result);
     }
 
